@@ -1,0 +1,7 @@
+book.render:
+  path: '/view-artist/{artist}'
+  defaults:
+    _controller: '\Drupal\spotifyapi\Controller\SpotifyController::viewArtist'
+    _title: 'View Artist'
+  requirements:
+    _permission: 'spotifyapi view artist'

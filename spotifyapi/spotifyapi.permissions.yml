@@ -1,0 +1,3 @@
+spotifyapi view artist:
+  title: 'View artist information'
+  description: 'Allows user to see artist information.'
