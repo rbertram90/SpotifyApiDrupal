@@ -25,6 +25,13 @@ class SpotifyController extends ControllerBase implements ContainerInjectionInte
 
   public function viewArtist(Request $request, $artist) {
     $artistData = $this->spotifyApi->getArtistDetails($artist);
+
+    var_dump($artistData);
+
+    return [
+      '#theme' => 'artist_detail',
+      '#artist' => $artistData
+    ];
   }
 
 }

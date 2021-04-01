@@ -1,2 +1,19 @@
 <?php
 
+/**
+ * Implements hook_theme().
+ */
+function spotifyapi_theme($existing, $type, $theme, $path) {
+  return [
+    'artist_list' => [
+      'variables' => [
+        'artists' => []
+      ]
+    ],
+    'artist_detail' => [
+      'variables' => [
+        'artist' => NULL
+      ]
+    ]
+  ];
+}

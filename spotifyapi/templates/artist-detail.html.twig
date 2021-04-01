@@ -1,0 +1,9 @@
+<h1>{{ artist.name }}</h1>
+
+<ul>
+  <li>Followers: {{ artist.followers.total }}</li>
+  <li>Popularity: {{ artist.popularity }}</li>
+  <li>Genres: {{ artist.genres|join(',') }}</li>
+</ul>
+
+<img src="{{ artist.images[0].url }}" alt="">

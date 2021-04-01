@@ -84,7 +84,8 @@ class SpotifyBlock extends BlockBase implements ContainerFactoryPluginInterface 
     $related_artists = $this->spotifyApi->getArtistsData($my_favourite_artist, $config['artist_count']);
 
     return [
-      '#markup' => json_encode($related_artists)
+      '#theme' => 'artist_list',
+      '#artists' => $related_artists['artists']
     ];
   }
 
