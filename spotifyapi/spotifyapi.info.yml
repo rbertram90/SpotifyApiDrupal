@@ -1,5 +1,7 @@
 name: 'Spotify Test'
 type: module
-description: ''
+description: 'Provides a block with related artist list and route for get further detail'
 core_version_requirement: ^8 || ^9
 package: 'Custom'
+dependencies:
+  - block

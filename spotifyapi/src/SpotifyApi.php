@@ -8,6 +8,13 @@ use Drupal\Core\State\StateInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 
+/**
+ * Class SpotifyApi
+ *
+ * Performs API requests to Spotify API to get data
+ *
+ * @package Drupal\spotifyapi
+ */
 class SpotifyApi {
 
   /** @var \GuzzleHttp\ClientInterface */
@@ -19,20 +26,29 @@ class SpotifyApi {
   /** @var \Drupal\Core\State\StateInterface */
   protected $state;
 
+  /** @var \Drupal\Core\Messenger\MessengerInterface */
+  protected $messenger;
+
   protected const SPOTIFY_BASE_URL = 'https://accounts.spotify.com';
   protected const SPOTIFY_API_BASE_URL = 'https://api.spotify.com';
 
-  public function __construct(ClientInterface $client, ConfigFactoryInterface $configFactory, StateInterface $state)
+  public function __construct(ClientInterface $client, ConfigFactoryInterface $configFactory, StateInterface $state, MessengerInterface $messenger)
   {
     $this->httpClient = $client;
     $this->config = $configFactory->get('spotifyapi.settings');
     $this->state = $state;
+    $this->messenger = $messenger;
   }
 
+  /**
+   * @param $artist
+   *
+   * @return array|mixed
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   */
   public function getArtistDetails($artist) {
     $auth_token = $this->getAuthToken();
 
-    // Hard coded starting artist for now
     try {
       $response = $this->httpClient->request('GET', self::SPOTIFY_API_BASE_URL . "/v1/artists/{$artist}", [
         'headers' => [
@@ -41,7 +57,7 @@ class SpotifyApi {
       ]);
     }
     catch (GuzzleException $e) {
-      \Drupal::messenger()->addMessage('Unable to get artist data: ' . $e->getMessage(), MessengerInterface::TYPE_ERROR);
+      $this->messenger->addMessage('Unable to get artist data: ' . $e->getMessage(), MessengerInterface::TYPE_ERROR);
       return [];
     }
 
@@ -52,11 +68,17 @@ class SpotifyApi {
     return [];
   }
 
-  public function getArtistsData($artist, $limit = 10) {
-
+  /**
+   * @param $artist
+   *  Starting Artist spotify ID.
+   * @param int $limit
+   *  Number of related artists to return.
+   *
+   * @return array
+   */
+  public function getRelatedArtists($artist, $limit = 9) {
     $auth_token = $this->getAuthToken();
 
-    // Hard coded starting artist for now
     try {
       $response = $this->httpClient->request('GET', self::SPOTIFY_API_BASE_URL . "/v1/artists/{$artist}/related-artists", [
         'headers' => [
@@ -68,7 +90,7 @@ class SpotifyApi {
       ]);
     }
     catch (GuzzleException $e) {
-      \Drupal::messenger()->addMessage('Unable to get related artists: ' . $e->getMessage(), MessengerInterface::TYPE_ERROR);
+      $this->messenger->addMessage('Unable to get related artists: ' . $e->getMessage(), MessengerInterface::TYPE_ERROR);
       return [];
     }
 
@@ -95,10 +117,10 @@ class SpotifyApi {
       return $token;
     }
 
-    // set using $config['spotifyapi.settings']['api_client_id'] in settings.php or through config form
+    // set using $config['spotifyapi.settings']['api_client_id'] in settings.php or could add a module config form
     $client_id = $this->config->get('api_client_id');
 
-    // set using $config['spotifyapi.settings']['api_client_secret'] in settings.php or through config form
+    // set using $config['spotifyapi.settings']['api_client_secret'] in settings.php or could add a module config form
     $client_secret = $this->config->get('api_client_secret');
 
     $basic_auth = base64_encode($client_id . ':' . $client_secret);
@@ -122,7 +144,7 @@ class SpotifyApi {
       return $response_data->access_token;
     }
 
-    throw new \Exception('Did not get valid response');
+    throw new \Exception("Did not get valid response for auth token ({$response->getStatusCode()})");
   }
 
 }

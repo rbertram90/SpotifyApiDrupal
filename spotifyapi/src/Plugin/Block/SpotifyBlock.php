@@ -9,11 +9,11 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a 'Spotify' Block.
+ * Provides a 'Related artists list' Block with data sourced from Spotify.
  *
  * @Block(
  *   id = "spotify_artist_list",
- *   admin_label = @Translation("Spotify Artist List"),
+ *   admin_label = @Translation("Related Artist List"),
  * )
  */
 class SpotifyBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -62,7 +62,14 @@ class SpotifyBlock extends BlockBase implements ContainerFactoryPluginInterface 
       '#options' => range(1, 20),
       '#title' => $this->t('How many artists to show'),
       '#required' => TRUE,
-      '#default_value' => isset($config['artist_count']) ? $config['artist_count'] : 9, // zero indexed default = 10 artists
+      '#default_value' => isset($config['artist_count']) ? $config['artist_count'] : 9, // zero indexed, default = 10 artists
+    ];
+
+    $form['artist_id'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Artist ID to get related artists for'),
+      '#required' => TRUE,
+      '#default_value' => isset($config['artist_id']) ? $config['artist_id'] : '',
     ];
 
     return $form;
@@ -75,13 +82,16 @@ class SpotifyBlock extends BlockBase implements ContainerFactoryPluginInterface 
     parent::blockSubmit($form, $form_state);
     $values = $form_state->getValues();
     $this->configuration['artist_count'] = $values['artist_count'];
+    $this->configuration['artist_id'] = $values['artist_id'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function build() {
     // Starting point to get further artists
-    $my_favourite_artist = '3rIZMv9rysU7JkLzEaC5Jp';
     $config = $this->getConfiguration();
-    $related_artists = $this->spotifyApi->getArtistsData($my_favourite_artist, $config['artist_count']);
+    $related_artists = $this->spotifyApi->getRelatedArtists($config['artist_id'], $config['artist_count'] + 1);
 
     return [
       '#theme' => 'artist_list',
@@ -89,9 +99,11 @@ class SpotifyBlock extends BlockBase implements ContainerFactoryPluginInterface 
     ];
   }
 
-  public function getCacheMaxAge()
-  {
-    return 0;
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge() {
+    return 60 * 60 * 24; // 1 day
   }
 
 }
